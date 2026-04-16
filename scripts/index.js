@@ -36,19 +36,33 @@ function getCommonColorName(r, g, b) {
 
 // Attiva la fotocamera
 async function startCamera() {
-
     try {
-        console.log("Start camera");
         const stream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: "environment" },
         });
+        
         video.srcObject = stream;
+
+        // Non fare play() subito! Aspetta che il browser sia pronto
+        video.onloadedmetadata = async () => {
+            try {
+                await video.play();
+                console.log("Camera avviata con successo");
+            } catch (playError) {
+                console.error("Play interrotto:", playError);
+            }
+        };
     } catch (err) {
-        alert("Errore accesso fotocamera: " + err);
+        alert("Errore camera: " + err);
     }
 }
 
 async function analyzeColor() {
+    if (video.paused || video.ended || video.readyState < 2) {
+        requestAnimationFrame(analyzeColor);
+        return;
+    }
+
     await Sleep(200);
     if (video.readyState === video.HAVE_ENOUGH_DATA) {
         canvas.width = video.videoWidth;
