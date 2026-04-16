@@ -9,7 +9,7 @@ body {
     height: 100vh;
     object-fit: cover;
 }
-#crosshair {
+/* #crosshair {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -19,7 +19,43 @@ body {
     border-radius: 50%;
     transform: translate(-50%, -50%);
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+} */
+
+#crosshair {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 6px;
+    height: 6px;
+    color: white;
+    transform: translate(-50%, -50%);
 }
+
+#crosshair::after,
+#crosshair::before {
+    content: "";
+    background: white;
+    border-radius: 1px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    /* Sposta l'elemento indietro del 50% della propria larghezza/altezza */
+    transform: translate(-50%, -50%);
+}
+
+#crosshair::after { /*  Vertical Line */
+    /* left: 30px; */
+    width: 2px;
+    height: 20px;
+    box-shadow: 0 5px white, 0 -5px white;
+}
+
+#crosshair::before { /* Horizontal Line */
+    width: 20px;
+    height: 2px;
+    box-shadow: 5px 0 white, -5px 0 white;
+}
+
 #info {
     position: absolute;
     bottom: 50px;

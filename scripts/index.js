@@ -4,42 +4,39 @@ const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d", { willReadFrequently: true });
 
-const colorDatabase = [
-    { name: "Bianco", rgb: [255, 255, 255] },
-    { name: "Nero", rgb: [0, 0, 0] },
-    { name: "Rosso", rgb: [255, 0, 0] },
-    { name: "Verde", rgb: [0, 255, 0] },
-    { name: "Blu", rgb: [0, 0, 255] },
-    { name: "Giallo", rgb: [255, 255, 0] },
-    { name: "Arancione", rgb: [255, 165, 0] },
-    { name: "Viola", rgb: [128, 0, 128] },
-    { name: "Grigio", rgb: [128, 128, 128] }
-];
+let colorDatabase = null;
+
 
 // Funzione per calcolare la distanza tra due colori
-function getColorName(r, g, b) {
-    let closestColor = colorDatabase[0];
+function getCommonColorName(r, g, b) {
+    if (colorDatabase.length === 0) return "Caricamento...";
+
     let minDistance = Infinity;
+    let closest = null;
 
     colorDatabase.forEach(color => {
-        // Formula della distanza euclidea 3D
-        const distance = Math.sqrt(
-            Math.pow(r - color.rgb[0], 2) +
-            Math.pow(g - color.rgb[1], 2) +
-            Math.pow(b - color.rgb[2], 2)
+        // Distanza Euclidea pesata (l'occhio umano percepisce meglio il verde)
+        // Se vuoi semplicità usa quella standard, altrimenti questa è più precisa:
+        const d = Math.sqrt(
+            Math.pow((r - color.rgb["r"]) * 0.30, 2) +
+            Math.pow((g - color.rgb["g"]) * 0.59, 2) +
+            Math.pow((b - color.rgb["b"]) * 0.11, 2)
         );
 
-        if (distance < minDistance) {
-            minDistance = distance;
-            closestColor = color;
+        if (d < minDistance) {
+            minDistance = d;
+            closest = color;
         }
     });
 
-    return closestColor.name;
+    // Se la distanza è minima, siamo sicuri del colore
+    // Se d > 100 (valore indicativo), il colore è molto diverso da quelli in lista
+    return closest.name;
 }
 
 // Attiva la fotocamera
 async function startCamera() {
+
     try {
         console.log("Start camera");
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -76,7 +73,7 @@ async function analyzeColor() {
         // const color = ntc.name(hex);
         // alert(color)
 
-        const colorName = getColorName(r,g,b)
+        const colorName = getCommonColorName(r,g,b)
 
         document.getElementById("colorBox").style.backgroundColor = hex;
         document.getElementById("colorHex").innerText = hex;
@@ -92,8 +89,16 @@ async function analyzeColor() {
 //     navigator.serviceWorker.register("sw.js");
 // }
 
-video.addEventListener("play", () => {
+(async () => {
+    video.addEventListener("play", () => {
     requestAnimationFrame(analyzeColor);
 });
+    await fetch("./../datasets/colors.json")
+        .then(res => res.json())
+        .then(data => colorDatabase = data.colors);
 
-startCamera();
+    console.log(colorDatabase)
+
+    await startCamera();
+})()
+
