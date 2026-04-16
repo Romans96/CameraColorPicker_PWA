@@ -93,7 +93,7 @@ async function analyzeColor() {
     video.addEventListener("play", () => {
     requestAnimationFrame(analyzeColor);
 });
-    await fetch("./../datasets/colors.json")
+    await fetch("./datasets/colors.json")
         .then(res => res.json())
         .then(data => colorDatabase = data.colors);
 
